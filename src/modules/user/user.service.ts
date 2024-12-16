@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from 'src/entities/user.entity';
 import { Repository } from 'typeorm';
 import { UserDataDto } from './dto/userDataDto.dto';
+import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class UserService {
@@ -15,25 +16,15 @@ export class UserService {
 
   async getAllUser(): Promise<UserDataDto[]> {
     const allUserData = await this.userRepository.find();
+    allUserData.map(user => plainToClass(UserDataDto, user))
     return allUserData;
   }
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+
+  async getUserByEmail(email: string): Promise<UserDataDto> {
+    return await this.userRepository.findOne({ where: { email } })
   }
 
-  findAll() {
-    return `This action returns all user`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async getUserById(id: string): Promise<UserDataDto> {
+    return await this.userRepository.findOne(id);
   }
 }
