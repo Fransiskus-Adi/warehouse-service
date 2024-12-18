@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpException, HttpStatus } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDataDto } from './dto/userDataDto.dto';
+import { UserEntity } from 'src/entities/user.entity';
+import { CreateUserDto } from './dto/createUserDto.dto';
+import { UpdateUserDto } from './dto/updateUserDto.dto';
 
 @Controller('user')
 export class UserController {
@@ -18,7 +19,32 @@ export class UserController {
   }
 
   @Get('/search')
-  async getUserByEmail(@Query('email') email?: string): Promise<UserDataDto> {
+  async getUserByEmail(@Query('email') email?: string): Promise<UserEntity> {
     return await this.userService.getUserByEmail(email);
+  }
+
+  @Post('/')
+  async createUser(@Body() createUserDto: CreateUserDto) {
+    try {
+      const newUser = await this.userService.createUser(createUserDto)
+      return newUser;
+      // return null;
+    } catch (error) {
+      throw new HttpException(error.message || 'Internal Server Error', error.status || HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Delete(':id')
+  async deleteUser(@Param('id') id: string): Promise<void> {
+    try {
+      return await this.userService.deleteUser(id);
+    } catch (error) {
+      throw new HttpException(error.message || 'Internal Server Error', error.status || HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
+  @Patch(":id")
+  async updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<UserDataDto> {
+    return await this.userService.updateUser(id, updateUserDto);
   }
 }
