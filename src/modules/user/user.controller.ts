@@ -1,34 +1,50 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpException, HttpStatus } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UserDataDto } from './dto/userDataDto.dto';
+import { UserEntity } from 'src/entities/user.entity';
+import { CreateUserDto } from './dto/createUserDto.dto';
+import { UpdateUserDto } from './dto/updateUserDto.dto';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
-
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  constructor(private readonly userService: UserService) { }
+  @Get('/')
+  async getAllUser(): Promise<UserDataDto[]> {
+    return await this.userService.getAllUser();
   }
 
-  @Get()
-  findAll() {
-    return this.userService.findAll();
+  @Get('/:id')
+  async getUserById(@Param() id?: string): Promise<UserDataDto> {
+    return await this.userService.getUserById(id)
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  @Get('/search')
+  async getUserByEmail(@Query('email') email?: string): Promise<UserEntity> {
+    return await this.userService.getUserByEmail(email);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  @Post('/')
+  async createUser(@Body() createUserDto: CreateUserDto) {
+    try {
+      const newUser = await this.userService.createUser(createUserDto)
+      return newUser;
+      // return null;
+    } catch (error) {
+      throw new HttpException(error.message || 'Internal Server Error', error.status || HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  async deleteUser(@Param('id') id: string): Promise<void> {
+    try {
+      return await this.userService.deleteUser(id);
+    } catch (error) {
+      throw new HttpException(error.message || 'Internal Server Error', error.status || HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
+  @Patch(":id")
+  async updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<UserDataDto> {
+    return await this.userService.updateUser(id, updateUserDto);
   }
 }
