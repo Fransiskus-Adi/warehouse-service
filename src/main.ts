@@ -4,6 +4,7 @@ import configuration from './config/configuration';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
   const defaulConfigService = configuration()
@@ -16,6 +17,7 @@ async function bootstrap() {
     host, port, username, password
   }))
   const configService = app.get(ConfigService)
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), { prefix: '/images', })
   app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({

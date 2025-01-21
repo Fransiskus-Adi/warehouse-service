@@ -14,6 +14,8 @@ import { CategoryEntity } from './entities/category.entity';
 import { ProductEntity } from './entities/product.entity';
 import { TransactionEntity } from './entities/transaction.entity';
 import { TransactionItemEntity } from './entities/transactionItem.entity';
+import { MulterModule } from '@nestjs/platform-express';
+import { multerConfig } from './config/multer-config';
 
 export function moduleFactory({
   host, port, username, password
@@ -47,6 +49,9 @@ export function moduleFactory({
       ConfigModule.forRoot({
         load: [configuration],
         isGlobal: true,
+      }),
+      MulterModule.register({
+        storage: multerConfig.storage
       }),
       TypeOrmModule.forRootAsync(dbConfig),
       UserModule,
